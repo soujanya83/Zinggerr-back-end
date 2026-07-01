@@ -12,7 +12,7 @@ router.route('/').get(
         {
           uptime: process.uptime(),
           status: 'OK',
-          timestamp: Date.now(),
+          timestamp: new Date(Date.now()).toLocaleString(),
         },
         'Server is healthy and running'
       )
