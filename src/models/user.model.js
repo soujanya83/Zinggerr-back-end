@@ -31,6 +31,11 @@ const userSchema = new Schema(
       required: [true, 'Role association is required'],
       index: true,
     },
+    contactNumber: {
+      type: String,
+      required: [true, 'Contact number is required'],
+      trim: true,
+    },
     email: {
       type: String,
       required: [true, 'Email is required'],
