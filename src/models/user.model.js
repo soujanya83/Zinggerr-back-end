@@ -53,31 +53,34 @@ const userSchema = new Schema(
       required: [true, 'Password is required'],
       select: false,
     },
-    centre: {
-      type: Schema.Types.ObjectId,
-      ref: 'Centre',
-      required: [true, 'Centre association is required'],
-      index: true,
+    userType: {
+      type: String,
+      enum: ['individual', 'organization'],
+      default: 'individual',
+      required: true,
     },
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: 'Organization',
+      index: true,
+      required: [
+        function () {
+          return this.userType === 'organization';
+        },
+        'Organization association is required when userType is organization',
+      ],
+    },
+    extraPermissions: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Permission',
+      },
+    ],
   },
   {
     timestamps: true,
   }
 );
 
-// Hash password before saving if it has been modified
-userSchema.pre('save', async function () {
-  if (!this.isModified('password')) return;
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
-
-// Instance method to check if password is correct
-userSchema.methods.isPasswordCorrect = async function (password) {
-  // If password was selected: false, it might not be present on 'this' when checking
-  // but usually users retrieve it explicitly when doing authentication.
-  return await bcrypt.compare(password, this.password);
-};
 
 export const User = mongoose.model('User', userSchema);

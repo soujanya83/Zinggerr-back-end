@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
-const centreSchema = new Schema(
+const organizationSchema = new Schema(
   {
     logo: {
       type: String,
@@ -8,7 +8,7 @@ const centreSchema = new Schema(
     },
     name: {
       type: String,
-      required: [true, 'Centre name is required'],
+      required: [true, 'Organization name is required'],
       trim: true,
       index: true,
     },
@@ -38,4 +38,4 @@ const centreSchema = new Schema(
   }
 );
 
-export const Centre = mongoose.model('Centre', centreSchema);
+export const Organization = mongoose.model('Organization', organizationSchema);

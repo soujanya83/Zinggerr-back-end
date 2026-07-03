@@ -17,10 +17,9 @@ const roleSchema = new Schema(
           ref: 'Permission',
       },
     ],
-    centre: {
+    organization: {
       type: Schema.Types.ObjectId,
-      ref: 'Centre',
-      required: [true, 'Centre association is required'],
+      ref: 'Organization',
     },
   },
   {
@@ -28,7 +27,7 @@ const roleSchema = new Schema(
   }
 );
 
-// Compound index to ensure unique role names *per centre*
-roleSchema.index({ centre: 1, name: 1 }, { unique: true });
+// Compound index to ensure unique role names *per organization*
+roleSchema.index({ organization: 1, name: 1 }, { unique: true });
 
 export const Role = mongoose.model('Role', roleSchema);
