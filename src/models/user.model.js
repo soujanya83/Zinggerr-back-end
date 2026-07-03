@@ -1,5 +1,4 @@
 import mongoose, { Schema } from 'mongoose';
-import bcrypt from 'bcrypt';
 
 const userSchema = new Schema(
   {
@@ -63,12 +62,6 @@ const userSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Organization',
       index: true,
-      required: [
-        function () {
-          return this.userType === 'organization';
-        },
-        'Organization association is required when userType is organization',
-      ],
     },
     extraPermissions: [
       {
@@ -76,11 +69,13 @@ const userSchema = new Schema(
         ref: 'Permission',
       },
     ],
+    refreshToken: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   }
 );
-
 
 export const User = mongoose.model('User', userSchema);

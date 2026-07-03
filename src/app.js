@@ -4,6 +4,8 @@ import { env } from './config/env.js';
 import logger from './config/logger.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 import healthRouter from './routes/health.routes.js';
+import cookieParser from 'cookie-parser';
+import authRouter from './routes/auth.routes.js';
 
 const app = express();
 
@@ -17,6 +19,8 @@ app.use(
 
 app.use(express.json({ limit: '16kb' }));
 app.use(express.urlencoded({ extended: true, limit: '16kb' }));
+app.use(cookieParser());
+app.use('/uploads', express.static('public/uploads'));
 
 // Request Logger Middleware
 app.use((req, res, next) => {
@@ -26,6 +30,7 @@ app.use((req, res, next) => {
 
 // Routes Declaration
 app.use('/api/v1/health', healthRouter);
+app.use('/api/v1/auth', authRouter);
 
 // Global Error Handler Middleware (MUST be last)
 app.use(errorHandler);
