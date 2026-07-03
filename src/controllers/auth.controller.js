@@ -11,14 +11,16 @@ const cookieOptions = {
 export class AuthController {
   static signup = async (req, res, next) => {
     try {
-      const user = await AuthService.signup(req.body);
+      const { user, accessToken, refreshToken } = await AuthService.signup(req.body);
       return res
         .status(201)
+        .cookie('accessToken', accessToken, cookieOptions)
+        .cookie('refreshToken', refreshToken, cookieOptions)
         .json(
           new ApiResponse(
             201,
             { user },
-            'User registered successfully. Please log in.'
+            'User registered successfully'
           )
         );
     } catch (error) {
@@ -36,7 +38,7 @@ export class AuthController {
         .json(
           new ApiResponse(
             200,
-            { user, accessToken, refreshToken },
+            { user },
             'User logged in successfully'
           )
         );

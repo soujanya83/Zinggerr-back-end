@@ -43,8 +43,14 @@ export class AuthService {
       throw new ApiError(500, 'Something went wrong while registering the user');
     }
 
-    // Return created user (no tokens generated on signup
-    return createdUser;
+    // Generate tokens using AuthHelper
+    const accessToken = AuthHelper.generateAccessToken(createdUser);
+    const refreshToken = AuthHelper.generateRefreshToken(createdUser);
+
+    // Save refresh token to DB
+    await UserRepository.updateRefreshToken(createdUser._id, refreshToken);
+
+    return { user: createdUser, accessToken, refreshToken };
   }
 
   static async signin({ email, password }) {

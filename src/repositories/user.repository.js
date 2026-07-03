@@ -44,4 +44,12 @@ export class UserRepository {
       { new: true }
     );
   }
+
+  static async updateExtraPermissions(userId, extraPermissions) {
+    return await User.findByIdAndUpdate(
+      userId,
+      { extraPermissions },
+      { new: true }
+    ).select('-password -refreshToken');
+  }
 }

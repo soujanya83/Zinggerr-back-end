@@ -63,12 +63,10 @@ const userSchema = new Schema(
       ref: 'Organization',
       index: true,
     },
-    extraPermissions: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Permission',
-      },
-    ],
+    extraPermissions: {
+      type: [String],
+      default: [],
+    },
     refreshToken: {
       type: String,
     },

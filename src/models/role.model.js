@@ -11,12 +11,10 @@ const roleSchema = new Schema(
       type: String,
       trim: true,
     },
-    permissions: [
-      {
-          type: Schema.Types.ObjectId,
-          ref: 'Permission',
-      },
-    ],
+    permissions: {
+      type: [String],
+      default: [],
+    },
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'Organization',

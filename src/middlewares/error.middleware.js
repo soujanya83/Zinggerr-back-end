@@ -15,7 +15,6 @@ const errorHandler = (err, req, res, next) => {
   const response = {
     ...error,
     message: error.message,
-    ...(process.env.NODE_ENV === 'development' ? { stack: error.stack } : {}),
   };
 
   // Log error using Winston logger
