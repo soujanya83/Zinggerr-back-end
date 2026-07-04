@@ -28,7 +28,8 @@ export const signupSchema = Joi.object({
   userType: Joi.string().valid('individual', 'organization').default('individual').required().messages({
     'any.required': 'User type is required',
     'any.only': 'User type must be either individual or organization'
-  })
+  }),
+  rememberMe: Joi.boolean().optional().default(false)
 });
 
 export const signinSchema = Joi.object({
@@ -40,7 +41,8 @@ export const signinSchema = Joi.object({
   password: Joi.string().required().messages({
     'any.required': 'Password is required',
     'string.empty': 'Password is required'
-  })
+  }),
+  rememberMe: Joi.boolean().optional().default(false)
 });
 
 export const onboardOrganizationSchema = Joi.object({

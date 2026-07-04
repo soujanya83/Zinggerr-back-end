@@ -1,0 +1,19 @@
+{
+  "__endpoint": "POST /api/v1/roles",
+  "__headers": {
+    "Authorization": "Bearer <accessToken>"
+  },
+  "__comments": {
+    "name": "Required. String. Name of the role (e.g. 'Manager', 'Editor').",
+    "description": "Optional. String. Short details about what this role represents.",
+    "permissions": "Optional. Array of Strings. Immediate list of assigned permission keys.",
+    "organization": "Optional. String (24-character hex ObjectId). Associate this role with a specific organization."
+  },
+  "name": "Manager",
+  "description": "Mid-level organization manager",
+  "permissions": [
+    "courses.read",
+    "courses.update"
+  ],
+  "organization": "6a476ba3f3cb57682ed4f4ab"
+}

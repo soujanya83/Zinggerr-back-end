@@ -1,0 +1,25 @@
+{
+  "__endpoint": "POST /api/v1/organizations",
+  "__content_type": "multipart/form-data",
+  "__headers": {
+    "Authorization": "Bearer <accessToken>"
+  },
+  "__comments": {
+    "name": "Required. Text. The name of the organization.",
+    "streetAddress": "Required. Text. Street address details.",
+    "city": "Required. Text. City name.",
+    "state": "Required. Text. State code or name.",
+    "postalCode": "Required. Text. Zip code.",
+    "logo": "Optional. File. An image file to upload as the organization logo (multipart file field)."
+  },
+  "formFields": {
+    "name": "Acme Industries",
+    "streetAddress": "456 Enterprise Way",
+    "city": "Innovation Town",
+    "state": "CA",
+    "postalCode": "94016"
+  },
+  "fileFields": {
+    "logo": "Select an image file in Postman's form-data file selector (e.g. logo.png)"
+  }
+}

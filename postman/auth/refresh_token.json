@@ -1,0 +1,6 @@
+{
+  "__comments": {
+    "refreshToken": "Optional fallback. The raw refresh token string. Typically passed automatically via cookies, but can be explicitly sent in the body if cookies are not supported."
+  },
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2YTQ3NmIxMmYzY2I1NzY4MmVkNGY0YWEiLCJzZXNzaW9uSWQiOiJhODIzYzMxYi00MTBhLTQ3MTItOTIxOC1jMjkwYzBlZmViMTEiLCJpYXQiOjE3ODMxMzM4MjMsImV4cCI6MTc4Mzk5NzgyM30.signature"
+}

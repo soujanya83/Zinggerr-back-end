@@ -1,0 +1,22 @@
+{
+  "__endpoint": "PUT /api/v1/organizations/:id",
+  "__content_type": "multipart/form-data",
+  "__headers": {
+    "Authorization": "Bearer <accessToken>"
+  },
+  "__comments": {
+    "name": "Optional. Text. Updated organization name.",
+    "streetAddress": "Optional. Text. Updated street address.",
+    "city": "Optional. Text. Updated city.",
+    "state": "Optional. Text. Updated state.",
+    "postalCode": "Optional. Text. Updated postal code.",
+    "logo": "Optional. File. Updated image file for organization logo."
+  },
+  "formFields": {
+    "name": "Acme Industries Inc.",
+    "streetAddress": "456 Enterprise Way Suite 10"
+  },
+  "fileFields": {
+    "logo": "Select an image file in Postman's form-data file selector (e.g. new_logo.png)"
+  }
+}

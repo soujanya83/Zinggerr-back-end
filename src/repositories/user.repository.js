@@ -9,11 +9,17 @@ export class UserRepository {
     return await query;
   }
 
-  static async findById(id, populateFields = []) {
+  static async findById(id, populateFields = [], selectRefreshToken = false, selectPassword = false) {
     let query = User.findById(id);
     populateFields.forEach((field) => {
       query = query.populate(field);
     });
+    if (selectRefreshToken) {
+      query = query.select('+refreshToken');
+    }
+    if (selectPassword) {
+      query = query.select('+password');
+    }
     return await query;
   }
 

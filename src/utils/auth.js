@@ -11,11 +11,12 @@ export class AuthHelper {
     return await bcrypt.compare(password, hashedPassword);
   }
 
-  static generateAccessToken(user) {
+  static generateAccessToken(user, sessionId) {
     return jwt.sign(
       {
         _id: user._id,
         email: user.email,
+        sessionId,
       },
       env.ACCESS_TOKEN_SECRET,
       {
@@ -24,14 +25,15 @@ export class AuthHelper {
     );
   }
 
-  static generateRefreshToken(user) {
+  static generateRefreshToken(user, sessionId, expiresIn = env.REFRESH_TOKEN_EXPIRY) {
     return jwt.sign(
       {
         _id: user._id,
+        sessionId,
       },
       env.REFRESH_TOKEN_SECRET,
       {
-        expiresIn: env.REFRESH_TOKEN_EXPIRY,
+        expiresIn,
       }
     );
   }

@@ -3,9 +3,13 @@ import { RoleRepository } from '../repositories/role.repository.js';
 import { OrganizationRepository } from '../repositories/organization.repository.js';
 import { AuthHelper } from '../utils/auth.js';
 import { ApiError } from '../utils/ApiError.js';
+import { SessionService } from './session.service.js';
+import { SessionRepository } from '../repositories/session.repository.js';
+import { AuditService } from './audit.service.js';
+import { User } from '../models/user.model.js';
 
 export class AuthService {
-  static async signup({ firstname, lastname, email, contactNumber, password, userType, gender }) {
+  static async signup({ firstname, lastname, email, contactNumber, password, userType, gender }, clientInfo = {}) {
     // Check if email already exists
     const existedUser = await UserRepository.findByEmail(email);
     if (existedUser) {
@@ -43,17 +47,24 @@ export class AuthService {
       throw new ApiError(500, 'Something went wrong while registering the user');
     }
 
-    // Generate tokens using AuthHelper
-    const accessToken = AuthHelper.generateAccessToken(createdUser);
-    const refreshToken = AuthHelper.generateRefreshToken(createdUser);
+    // Create session (by default rememberMe = false for signup, or can be passed)
+    const rememberMe = !!clientInfo.rememberMe;
+    const { sessionId, accessToken, refreshToken } = await SessionService.createSession(
+      createdUser._id,
+      rememberMe,
+      clientInfo.ipAddress,
+      clientInfo.userAgent
+    );
 
-    // Save refresh token to DB
-    await UserRepository.updateRefreshToken(createdUser._id, refreshToken);
+    // Log security event
+    await AuditService.logEvent(createdUser._id, sessionId, 'LOGIN', clientInfo.ipAddress, clientInfo.userAgent, {
+      action: 'SIGNUP_LOGIN',
+    });
 
     return { user: createdUser, accessToken, refreshToken };
   }
 
-  static async signin({ email, password }) {
+  static async signin({ email, password, rememberMe }, clientInfo = {}) {
     // Find user (selecting password field)
     const user = await UserRepository.findByEmail(email, true);
     if (!user) {
@@ -63,51 +74,114 @@ export class AuthService {
     // Verify password using AuthHelper
     const isPasswordValid = await AuthHelper.comparePassword(password, user.password);
     if (!isPasswordValid) {
+      // Log failed login
+      await AuditService.logEvent(user._id, null, 'FAILED_LOGIN', clientInfo.ipAddress, clientInfo.userAgent, {
+        email,
+      });
       throw new ApiError(401, 'Invalid user credentials');
     }
 
-    // Generate tokens using AuthHelper
-    const accessToken = AuthHelper.generateAccessToken(user);
-    const refreshToken = AuthHelper.generateRefreshToken(user);
+    // Create session using SessionService
+    const { sessionId, accessToken, refreshToken } = await SessionService.createSession(
+      user._id,
+      !!rememberMe,
+      clientInfo.ipAddress,
+      clientInfo.userAgent
+    );
 
-    // Save refresh token to DB
-    await UserRepository.updateRefreshToken(user._id, refreshToken);
+    // Log success login
+    await AuditService.logEvent(user._id, sessionId, 'LOGIN', clientInfo.ipAddress, clientInfo.userAgent);
 
     const loggedInUser = await UserRepository.findById(user._id, ['role', 'organization']);
 
     return { user: loggedInUser, accessToken, refreshToken };
   }
 
-  static async refreshAccessToken(incomingRefreshToken) {
+  static async refreshAccessToken(incomingRefreshToken, clientInfo = {}) {
     if (!incomingRefreshToken) {
       throw new ApiError(401, 'Unauthorized request');
     }
 
     try {
       const decodedToken = AuthHelper.verifyRefreshToken(incomingRefreshToken);
-      const user = await UserRepository.findById(decodedToken._id);
+      // Validate session and rotate refresh token using SessionService
+      const { accessToken, refreshToken, rememberMe } = await SessionService.rotateRefreshToken(
+        decodedToken.sessionId,
+        incomingRefreshToken,
+        clientInfo.ipAddress,
+        clientInfo.userAgent
+      );
 
-      if (!user) {
-        throw new ApiError(401, 'Invalid refresh token');
-      }
+      // Log token refresh in audit trail
+      await AuditService.logEvent(decodedToken._id, decodedToken.sessionId, 'REFRESH', clientInfo.ipAddress, clientInfo.userAgent);
 
-      if (incomingRefreshToken !== user.refreshToken) {
-        throw new ApiError(401, 'Refresh token is expired or used');
-      }
-
-      const accessToken = AuthHelper.generateAccessToken(user);
-      const newRefreshToken = AuthHelper.generateRefreshToken(user);
-
-      await UserRepository.updateRefreshToken(user._id, newRefreshToken);
-
-      return { accessToken, refreshToken: newRefreshToken };
+      return { accessToken, refreshToken, rememberMe };
     } catch (error) {
       throw new ApiError(401, error?.message || 'Invalid refresh token');
     }
   }
 
-  static async logout(userId) {
-    await UserRepository.clearRefreshToken(userId);
+  static async logout(incomingRefreshToken, ipAddress, userAgent) {
+    if (!incomingRefreshToken) {
+      return;
+    }
+    try {
+      const decodedToken = AuthHelper.verifyRefreshToken(incomingRefreshToken);
+      // Soft revoke the session
+      await SessionRepository.revokeSession(decodedToken.sessionId, 'LOGOUT');
+      await AuditService.logEvent(decodedToken._id, decodedToken.sessionId, 'LOGOUT', ipAddress, userAgent);
+    } catch (error) {
+      console.error('[AuthService] Logout token verification failed:', error.message);
+    }
+  }
+
+  static async changePassword(userId, currentSessionId, { oldPassword, newPassword, confirmNewPassword }, clientInfo = {}) {
+    if (!oldPassword || !newPassword || !confirmNewPassword) {
+      throw new ApiError(400, 'All fields (oldPassword, newPassword, confirmNewPassword) are required');
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      throw new ApiError(400, 'New password and confirm password do not match');
+    }
+
+    // Fetch user selecting password
+    const user = await UserRepository.findById(userId, [], false, true);
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    // Verify old password
+    const isPasswordValid = await AuthHelper.comparePassword(oldPassword, user.password);
+    if (!isPasswordValid) {
+      throw new ApiError(401, 'Invalid current password');
+    }
+
+    // Prevent reuse of old password
+    if (oldPassword === newPassword) {
+      throw new ApiError(400, 'New password must be different from current password');
+    }
+
+    // Update password
+    const hashedPassword = await AuthHelper.hashPassword(newPassword);
+    await User.findByIdAndUpdate(userId, { password: hashedPassword });
+
+    // Handle session revocation policy
+    const policy = process.env.PASSWORD_CHANGE_POLICY || 'POLICY_A';
+    if (policy === 'POLICY_A') {
+      // Revoke all other sessions except current
+      await SessionRepository.revokeAllSessions(userId, 'PASSWORD_CHANGED', currentSessionId);
+      await AuditService.logEvent(userId, currentSessionId, 'PASSWORD_CHANGED', clientInfo.ipAddress, clientInfo.userAgent, {
+        policyUsed: policy,
+        action: 'REVOKE_ALL_EXCEPT_CURRENT',
+      });
+    } else {
+      // POLICY_B: Revoke all sessions including current
+      await SessionRepository.revokeAllSessions(userId, 'PASSWORD_CHANGED');
+      await AuditService.logEvent(userId, currentSessionId, 'PASSWORD_CHANGED', clientInfo.ipAddress, clientInfo.userAgent, {
+        policyUsed: policy,
+        action: 'REVOKE_ALL',
+      });
+    }
   }
 
   static async onboardOrganization(userId, { name, streetAddress, city, state, postalCode }, logoFilename) {

@@ -18,6 +18,18 @@ router.route('/refresh-token').post(AuthController.refreshAccessToken);
 
 // Protected routes
 router.route('/logout').post(verifyJWT, AuthController.logout);
+router.route('/change-password').post(verifyJWT, AuthController.changePassword);
+
+router
+  .route('/sessions')
+  .get(verifyJWT, AuthController.getSessions)
+  .delete(verifyJWT, AuthController.revokeAllOtherSessions);
+
+router
+  .route('/sessions/:sessionId')
+  .get(verifyJWT, AuthController.getSession)
+  .delete(verifyJWT, AuthController.revokeSession);
+
 router.route('/onboard-organization').post(
   verifyJWT,
   upload.single('logo'),

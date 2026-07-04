@@ -1,0 +1,20 @@
+{
+  "__comments": {
+    "firstname": "Required. First name of the user. Cannot be empty.",
+    "lastname": "Required. Last name of the user. Cannot be empty.",
+    "gender": "Optional. Valid values: 'male', 'female', 'other'. Defaults to 'other'.",
+    "contactNumber": "Required. Contact phone number.",
+    "email": "Required. Must be a valid email address format.",
+    "password": "Required. Minimum length is 6 characters.",
+    "userType": "Required. Valid values: 'individual', 'organization'. Defaults to 'individual'.",
+    "rememberMe": "Optional. Boolean (true/false) to request a 30-day session."
+  },
+  "firstname": "John",
+  "lastname": "Doe",
+  "gender": "male",
+  "contactNumber": "+1234567890",
+  "email": "john.doe@example.com",
+  "password": "securePassword123",
+  "userType": "individual",
+  "rememberMe": true
+}

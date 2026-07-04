@@ -1,0 +1,19 @@
+{
+  "__endpoint": "POST /api/v1/permissions",
+  "__headers": {
+    "Authorization": "Bearer <accessToken>"
+  },
+  "__comments": {
+    "module": "Required. String. Unique name of the module (e.g. 'users', 'courses').",
+    "permissions": "Required. Array of Strings. At least one permission action name (e.g. ['users.create', 'users.read']).",
+    "organization": "Optional. String (24-character hex ObjectId). Explicitly bind the permission to a specific organization."
+  },
+  "module": "courses",
+  "permissions": [
+    "courses.create",
+    "courses.read",
+    "courses.update",
+    "courses.delete"
+  ],
+  "organization": "6a476ba3f3cb57682ed4f4ab"
+}

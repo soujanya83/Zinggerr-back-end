@@ -1,0 +1,10 @@
+{
+  "__comments": {
+    "email": "Required. Must be a valid email address of an existing user.",
+    "password": "Required. The user's account password.",
+    "rememberMe": "Optional. Boolean (true/false). If true, sets refresh token/session duration to 30 days. Otherwise, defaults to 7 days."
+  },
+  "email": "john.doe@example.com",
+  "password": "securePassword123",
+  "rememberMe": true
+}

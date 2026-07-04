@@ -1,0 +1,15 @@
+{
+  "__endpoint": "PUT /api/v1/roles/:id/permissions",
+  "__headers": {
+    "Authorization": "Bearer <accessToken>"
+  },
+  "__comments": {
+    "permissions": "Required. Array of Strings. Sets the exact list of string permissions for this role, overwriting previous assignments."
+  },
+  "permissions": [
+    "user.create",
+    "user.update",
+    "course.create",
+    "course.update"
+  ]
+}

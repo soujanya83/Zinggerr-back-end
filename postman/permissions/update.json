@@ -1,0 +1,18 @@
+{
+  "__endpoint": "PUT /api/v1/permissions/:id",
+  "__headers": {
+    "Authorization": "Bearer <accessToken>"
+  },
+  "__comments": {
+    "module": "Optional. String. Update the module name.",
+    "permissions": "Optional. Array of Strings. Updated list of permission actions.",
+    "organization": "Optional. String (24-character hex ObjectId). Update the associated organization ID."
+  },
+  "module": "courses-modified",
+  "permissions": [
+    "courses.create",
+    "courses.read",
+    "courses.update"
+  ],
+  "organization": "6a476ba3f3cb57682ed4f4ab"
+}

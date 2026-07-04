@@ -1,0 +1,18 @@
+{
+  "__endpoint": "PUT /api/v1/roles/:id",
+  "__headers": {
+    "Authorization": "Bearer <accessToken>"
+  },
+  "__comments": {
+    "name": "Optional. String. Update the role's name. (Note: cannot rename 'SuperAdmin').",
+    "description": "Optional. String. Update the role's description details.",
+    "permissions": "Optional. Array of Strings. Update the complete list of permission keys."
+  },
+  "name": "General Manager",
+  "description": "Senior organization manager",
+  "permissions": [
+    "courses.read",
+    "courses.update",
+    "courses.create"
+  ]
+}
