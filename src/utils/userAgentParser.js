@@ -4,6 +4,7 @@
  * @returns {object} { deviceName, browser, operatingSystem }
  */
 export function parseUserAgent(userAgentString) {
+  console.log("userAgentString: ", userAgentString);
   if (!userAgentString) {
     return {
       deviceName: 'Unknown Device',

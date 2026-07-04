@@ -46,7 +46,7 @@ export class AuthService {
     if (!createdUser) {
       throw new ApiError(500, 'Something went wrong while registering the user');
     }
-
+    console.log("Client Info : ", clientInfo);
     // Create session (by default rememberMe = false for signup, or can be passed)
     const rememberMe = !!clientInfo.rememberMe;
     const { sessionId, accessToken, refreshToken } = await SessionService.createSession(

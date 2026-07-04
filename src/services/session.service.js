@@ -197,6 +197,24 @@ export class SessionService {
   }
 
   /**
+   * Retrieves specific session details.
+   * 
+   * @param {string} userId 
+   * @param {string} sessionId 
+   * @returns {Promise<object>} Session document
+   */
+  static async getSessionDetails(userId, sessionId) {
+    const session = await SessionRepository.findBySessionId(sessionId);
+    if (!session) {
+      throw new ApiError(404, 'Session not found');
+    }
+    if (session.user.toString() !== userId.toString()) {
+      throw new ApiError(403, 'Forbidden: You do not own this session');
+    }
+    return session;
+  }
+
+  /**
    * Revokes a specific session (device logout).
    * 
    * @param {string} userId 
