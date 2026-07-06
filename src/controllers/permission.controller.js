@@ -15,7 +15,12 @@ export class PermissionController {
 
   static getAllPermissions = async (req, res, next) => {
     try {
-      const permissions = await PermissionService.getAllPermissions();
+      const { search } = req.query;
+      const filter = {};
+      if (search) {
+        filter.module = { $regex: search.trim(), $options: 'i' };
+      }
+      const permissions = await PermissionService.getAllPermissions(filter);
       return res
         .status(200)
         .json(new ApiResponse(200, { permissions }, 'Permissions retrieved successfully'));

@@ -39,6 +39,20 @@ export class OrganizationService {
     if (!org) {
       throw new ApiError(404, 'Organization not found');
     }
+    // Pull the deleted organization from user records
+    const { User } = await import('../models/user.model.js');
+    await User.updateMany(
+      { organizations: id },
+      { $pull: { organizations: id } }
+    );
+    await User.updateMany(
+      { organization: id },
+      { $unset: { organization: 1 } }
+    );
+    await User.updateMany(
+      { selectedOrganization: id },
+      { $unset: { selectedOrganization: 1 } }
+    );
     return await OrganizationRepository.delete(id);
   }
 }

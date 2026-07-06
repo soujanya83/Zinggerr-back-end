@@ -44,9 +44,19 @@ export class UserRepository {
   }
 
   static async associateOrganizationAndRole(userId, organizationId, roleId) {
+    const user = await User.findById(userId);
+    const hasSelected = !!user?.selectedOrganization;
+    const updateObj = {
+      organization: organizationId,
+      role: roleId,
+      $addToSet: { organizations: organizationId }
+    };
+    if (!hasSelected) {
+      updateObj.selectedOrganization = organizationId;
+    }
     return await User.findByIdAndUpdate(
       userId,
-      { organization: organizationId, role: roleId },
+      updateObj,
       { new: true }
     );
   }

@@ -63,6 +63,14 @@ const userSchema = new Schema(
       ref: 'Organization',
       index: true,
     },
+    organizations: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Organization',
+    }],
+    selectedOrganization: {
+      type: Schema.Types.ObjectId,
+      ref: 'Organization',
+    },
     extraPermissions: {
       type: [String],
       default: [],

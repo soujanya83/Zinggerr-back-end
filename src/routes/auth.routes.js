@@ -37,4 +37,10 @@ router.route('/onboard-organization').post(
   AuthController.onboardOrganization
 );
 
+router.route('/me').get(verifyJWT, AuthController.getMe);
+router
+  .route('/selected-organization')
+  .get(verifyJWT, AuthController.getSelectedOrg)
+  .put(verifyJWT, AuthController.saveSelectedOrg);
+
 export default router;

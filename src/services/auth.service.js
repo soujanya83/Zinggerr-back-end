@@ -42,7 +42,7 @@ export class AuthService {
       role: superAdminRole._id,
     });
 
-    const createdUser = await UserRepository.findById(user._id);
+    const createdUser = await UserRepository.findById(user._id, ['role', 'organization', 'organizations', 'selectedOrganization']);
     if (!createdUser) {
       throw new ApiError(500, 'Something went wrong while registering the user');
     }
@@ -92,7 +92,7 @@ export class AuthService {
     // Log success login
     await AuditService.logEvent(user._id, sessionId, 'LOGIN', clientInfo.ipAddress, clientInfo.userAgent);
 
-    const loggedInUser = await UserRepository.findById(user._id, ['role', 'organization']);
+    const loggedInUser = await UserRepository.findById(user._id, ['role', 'organization', 'organizations', 'selectedOrganization']);
 
     return { user: loggedInUser, accessToken, refreshToken };
   }
@@ -194,9 +194,9 @@ export class AuthService {
       throw new ApiError(400, 'Only organization type users can onboard an organization');
     }
 
-    if (user.organization) {
-      throw new ApiError(400, 'User is already associated with an organization');
-    }
+    // if (user.organization) {
+    //   throw new ApiError(400, 'User is already associated with an organization');
+    // }
 
     const logoUrl = logoFilename ? `/uploads/${logoFilename}` : '';
 
@@ -224,7 +224,7 @@ export class AuthService {
     // Associate user with organization and organization-specific role
     await UserRepository.associateOrganizationAndRole(user._id, organization._id, orgSuperAdminRole._id);
 
-    const updatedUser = await UserRepository.findById(user._id, ['role', 'organization']);
+    const updatedUser = await UserRepository.findById(user._id, ['role', 'organization', 'organizations', 'selectedOrganization']);
     return updatedUser;
   }
 }

@@ -11,6 +11,11 @@ const permissionSchema = new Schema(
     permissions: [{
       type:String,
     }],
+    icon: {
+      type: String,
+      default: 'Shield',
+      trim: true,
+    },
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'Organization',

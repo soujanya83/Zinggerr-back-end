@@ -11,8 +11,8 @@ export class PermissionService {
     return await PermissionRepository.create(permissionData);
   }
 
-  static async getAllPermissions() {
-    return await PermissionRepository.findAll();
+  static async getAllPermissions(filter = {}) {
+    return await PermissionRepository.findAll(filter);
   }
 
   static async getPermissionById(id) {

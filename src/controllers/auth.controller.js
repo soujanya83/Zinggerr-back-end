@@ -2,6 +2,10 @@ import { AuthService } from '../services/auth.service.js';
 import { SessionService } from '../services/session.service.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { env } from '../config/env.js';
+import { UserRepository } from '../repositories/user.repository.js';
+import { User } from '../models/user.model.js';
+import { Role } from '../models/role.model.js';
+import { ApiError } from '../utils/ApiError.js';
 
 const getCookieOptions = (maxAgeMs) => {
   const options = {
@@ -211,6 +215,67 @@ export class AuthController {
             'Organization onboarded successfully'
           )
         );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static getMe = async (req, res, next) => {
+    try {
+      const user = await UserRepository.findById(req.user._id, ['role', 'organization', 'organizations', 'selectedOrganization']);
+      return res
+        .status(200)
+        .json(new ApiResponse(200, { user }, 'Current user retrieved successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static saveSelectedOrg = async (req, res, next) => {
+    try {
+      const { organizationId } = req.body;
+      if (!organizationId) {
+        throw new ApiError(400, 'Organization ID is required');
+      }
+
+      const user = await User.findById(req.user._id);
+      if (!user) {
+        throw new ApiError(404, 'User not found');
+      }
+
+      if (!user.organizations.includes(organizationId)) {
+        throw new ApiError(403, 'You are not associated with this organization');
+      }
+
+      const superAdminRole = await Role.findOne({ name: 'SuperAdmin', organization: organizationId });
+      if (!superAdminRole) {
+        throw new ApiError(404, 'SuperAdmin role not found for selected organization');
+      }
+
+      user.selectedOrganization = organizationId;
+      user.organization = organizationId;
+      user.role = superAdminRole._id;
+      await user.save();
+
+      const updatedUser = await UserRepository.findById(req.user._id, ['role', 'organization', 'organizations', 'selectedOrganization']);
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, { user: updatedUser }, 'Selected organization saved successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static getSelectedOrg = async (req, res, next) => {
+    try {
+      const user = await User.findById(req.user._id).populate('selectedOrganization');
+      if (!user) {
+        throw new ApiError(404, 'User not found');
+      }
+      return res
+        .status(200)
+        .json(new ApiResponse(200, { selectedOrganization: user.selectedOrganization }, 'Selected organization retrieved successfully'));
     } catch (error) {
       next(error);
     }

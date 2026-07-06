@@ -14,11 +14,13 @@ export const createPermissionSchema = Joi.object({
     'any.required': 'Permissions array is required',
     'array.min': 'At least one permission is required',
   }),
+  icon: Joi.string().trim().optional(),
   organization: objectIdPattern.optional(),
 });
 
 export const updatePermissionSchema = Joi.object({
   module: Joi.string().trim().optional(),
   permissions: Joi.array().items(Joi.string().trim()).min(1).optional(),
+  icon: Joi.string().trim().optional(),
   organization: objectIdPattern.optional(),
 });
