@@ -24,11 +24,15 @@ export class UserRepository {
   }
 
   static async create(userData) {
-    if (userData.organization && (!userData.organizations || userData.organizations.length === 0)) {
-      userData.organizations = [userData.organization];
-    }
-    if (userData.organization && !userData.selectedOrganization) {
-      userData.selectedOrganization = userData.organization;
+    const orgId = userData.organization || userData.selectedOrganization;
+    if (orgId) {
+      if (!userData.organizations || userData.organizations.length === 0) {
+        userData.organizations = [orgId];
+      }
+      if (!userData.selectedOrganization) {
+        userData.selectedOrganization = orgId;
+      }
+      delete userData.organization;
     }
     return await User.create(userData);
   }
@@ -53,7 +57,6 @@ export class UserRepository {
     const user = await User.findById(userId);
     const hasSelected = !!user?.selectedOrganization;
     const updateObj = {
-      organization: organizationId,
       role: roleId,
       $addToSet: { organizations: organizationId }
     };

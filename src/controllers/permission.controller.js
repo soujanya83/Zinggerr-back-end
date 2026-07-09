@@ -15,8 +15,12 @@ export class PermissionController {
 
   static getAllPermissions = async (req, res, next) => {
     try {
-      const { search } = req.query;
+      const { search, organization } = req.query;
+      const orgId = organization || req.user?.selectedOrganization;
       const filter = {};
+      if (orgId) {
+        filter.organization = orgId;
+      }
       if (search) {
         filter.module = { $regex: search.trim(), $options: 'i' };
       }

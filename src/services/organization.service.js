@@ -46,10 +46,6 @@ export class OrganizationService {
       { $pull: { organizations: id } }
     );
     await User.updateMany(
-      { organization: id },
-      { $unset: { organization: 1 } }
-    );
-    await User.updateMany(
       { selectedOrganization: id },
       { $unset: { selectedOrganization: 1 } }
     );

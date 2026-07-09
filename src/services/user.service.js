@@ -10,7 +10,7 @@ export class UserService {
       throw new ApiError(400, 'Organization ID is required');
     }
 
-    userData.organization = orgId;
+    userData.selectedOrganization = orgId;
 
     // Validate that the role is associated with this organization
     const { Role } = await import('../models/role.model.js');
@@ -37,15 +37,19 @@ export class UserService {
     return newUser;
   }
 
-  static async getUsers({ search, gender, status, role, organization }, loggedInUserOrgId) {
+  static async getUsers({ search, gender, status, role, organization, page, limit }, loggedInUserOrgId) {
     const orgId = organization || loggedInUserOrgId;
     if (!orgId) {
       throw new ApiError(400, 'Organization ID is required');
     }
 
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.max(1, parseInt(limit) || 10);
+    const skip = (pageNum - 1) * limitNum;
+
     const filter = {
       $or: [
-        { organization: orgId },
+        { selectedOrganization: orgId },
         { organizations: orgId }
       ]
     };
@@ -56,6 +60,7 @@ export class UserService {
       filter.$and.push({
         $or: [
           { firstname: searchRegex },
+          { middlename: searchRegex },
           { lastname: searchRegex },
           { email: searchRegex },
           { contactNumber: searchRegex }
@@ -84,18 +89,33 @@ export class UserService {
       filter.role = filter.role ? { $eq: filter.role, $nin: superAdminRoleIds } : { $nin: superAdminRoleIds };
     }
 
-    return await User.find(filter).populate('role').populate('organization');
+    const total = await User.countDocuments(filter);
+    const users = await User.find(filter)
+      .populate('role')
+      .populate('selectedOrganization')
+      .skip(skip)
+      .limit(limitNum);
+
+    return {
+      users,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(total / limitNum)
+      }
+    };
   }
 
   static async getUserById(userId, loggedInUserOrgId) {
-    const user = await UserRepository.findById(userId, ['role', 'organization']);
+    const user = await UserRepository.findById(userId, ['role', 'selectedOrganization']);
     if (!user) {
       throw new ApiError(404, 'User not found');
     }
 
     if (
       loggedInUserOrgId &&
-      (!user.organization || user.organization.toString() !== loggedInUserOrgId.toString())
+      (!user.selectedOrganization || user.selectedOrganization.toString() !== loggedInUserOrgId.toString())
     ) {
       throw new ApiError(403, 'Forbidden: You do not have access to this user');
     }
@@ -109,10 +129,10 @@ export class UserService {
       throw new ApiError(404, 'User not found');
     }
 
-    const orgId = updateData.organization || user.organization || loggedInUserOrgId;
+    const orgId = updateData.organization || user.selectedOrganization || loggedInUserOrgId;
     if (
       loggedInUserOrgId &&
-      (!user.organization || user.organization.toString() !== loggedInUserOrgId.toString())
+      (!user.selectedOrganization || user.selectedOrganization.toString() !== loggedInUserOrgId.toString())
     ) {
       throw new ApiError(403, 'Forbidden: You do not have access to this user');
     }
@@ -134,9 +154,15 @@ export class UserService {
       updateData.password = await AuthHelper.hashPassword(updateData.password);
     }
 
+    // Map organization parameter if sent explicitly
+    if (updateData.organization) {
+      updateData.selectedOrganization = updateData.organization;
+      delete updateData.organization;
+    }
+
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true })
       .populate('role')
-      .populate('organization');
+      .populate('selectedOrganization');
 
     return updatedUser;
   }
@@ -149,7 +175,7 @@ export class UserService {
 
     if (
       loggedInUserOrgId &&
-      (!user.organization || user.organization.toString() !== loggedInUserOrgId.toString())
+      (!user.selectedOrganization || user.selectedOrganization.toString() !== loggedInUserOrgId.toString())
     ) {
       throw new ApiError(403, 'Forbidden: You do not have access to this user');
     }
@@ -166,7 +192,7 @@ export class UserService {
 
     if (
       loggedInUserOrgId &&
-      (!user.organization || user.organization.toString() !== loggedInUserOrgId.toString())
+      (!user.selectedOrganization || user.selectedOrganization.toString() !== loggedInUserOrgId.toString())
     ) {
       throw new ApiError(403, 'Forbidden: You do not have access to this user');
     }
@@ -177,7 +203,7 @@ export class UserService {
       userId,
       { status: newStatus },
       { new: true }
-    ).populate('role').populate('organization');
+    ).populate('role').populate('selectedOrganization');
 
     return updatedUser;
   }
@@ -190,7 +216,7 @@ export class UserService {
 
     if (
       loggedInUserOrgId &&
-      (!user.organization || user.organization.toString() !== loggedInUserOrgId.toString())
+      (!user.selectedOrganization || user.selectedOrganization.toString() !== loggedInUserOrgId.toString())
     ) {
       throw new ApiError(403, 'Forbidden: You do not have access to this user');
     }

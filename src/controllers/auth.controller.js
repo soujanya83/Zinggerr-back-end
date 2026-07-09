@@ -222,7 +222,7 @@ export class AuthController {
 
   static getMe = async (req, res, next) => {
     try {
-      const user = await UserRepository.findById(req.user._id, ['role', 'organization', 'organizations', 'selectedOrganization']);
+      const user = await UserRepository.findById(req.user._id, ['role', 'organizations', 'selectedOrganization']);
       return res
         .status(200)
         .json(new ApiResponse(200, { user }, 'Current user retrieved successfully'));
@@ -253,11 +253,10 @@ export class AuthController {
       }
 
       user.selectedOrganization = organizationId;
-      user.organization = organizationId;
       user.role = superAdminRole._id;
       await user.save();
 
-      const updatedUser = await UserRepository.findById(req.user._id, ['role', 'organization', 'organizations', 'selectedOrganization']);
+      const updatedUser = await UserRepository.findById(req.user._id, ['role', 'organizations', 'selectedOrganization']);
 
       return res
         .status(200)

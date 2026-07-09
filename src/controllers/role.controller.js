@@ -15,7 +15,8 @@ export class RoleController {
 
   static getAllRoles = async (req, res, next) => {
     try {
-      const roles = await RoleService.getAllRoles();
+      const organizationId = req.query.organization || req.user?.selectedOrganization;
+      const roles = await RoleService.getAllRoles(organizationId);
       return res
         .status(200)
         .json(new ApiResponse(200, { roles }, 'Roles retrieved successfully'));

@@ -12,8 +12,12 @@ export class RoleService {
     return await RoleRepository.create(roleData);
   }
 
-  static async getAllRoles() {
-    return await RoleRepository.findAll();
+  static async getAllRoles(organizationId) {
+    const filter = {};
+    if (organizationId) {
+      filter.organization = organizationId;
+    }
+    return await RoleRepository.findAll(filter);
   }
 
   static async getRoleById(id) {

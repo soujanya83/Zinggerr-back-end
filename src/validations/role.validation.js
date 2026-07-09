@@ -10,14 +10,14 @@ export const createRoleSchema = Joi.object({
     'any.required': 'Role name is required',
     'string.empty': 'Role name is required',
   }),
-  description: Joi.string().trim().optional(),
+  description: Joi.string().trim().optional().allow(''),
   permissions: Joi.array().items(Joi.string()).optional(),
   organization: objectIdPattern.optional(),
 });
 
 export const updateRoleSchema = Joi.object({
   name: Joi.string().trim().optional(),
-  description: Joi.string().trim().optional(),
+  description: Joi.string().trim().optional().allow(''),
   permissions: Joi.array().items(Joi.string()).optional(),
 });
 

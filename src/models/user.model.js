@@ -7,6 +7,10 @@ const userSchema = new Schema(
       required: [true, 'First name is required'],
       trim: true,
     },
+    middlename: {
+      type: String,
+      trim: true,
+    },
     lastname: {
       type: String,
       required: [true, 'Last name is required'],
@@ -16,9 +20,6 @@ const userSchema = new Schema(
       type: String,
       enum: ['male', 'female', 'other'],
       default: 'other',
-    },
-    dob: {
-      type: Date,
     },
     avatar: {
       type: String,
@@ -57,11 +58,6 @@ const userSchema = new Schema(
       enum: ['individual', 'organization'],
       default: 'individual',
       required: true,
-    },
-    organization: {
-      type: Schema.Types.ObjectId,
-      ref: 'Organization',
-      index: true,
     },
     organizations: [{
       type: Schema.Types.ObjectId,

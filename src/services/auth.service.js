@@ -42,7 +42,7 @@ export class AuthService {
       role: superAdminRole._id,
     });
 
-    const createdUser = await UserRepository.findById(user._id, ['role', 'organization', 'organizations', 'selectedOrganization']);
+    const createdUser = await UserRepository.findById(user._id, ['role', 'organizations']);
     if (!createdUser) {
       throw new ApiError(500, 'Something went wrong while registering the user');
     }
@@ -92,7 +92,7 @@ export class AuthService {
     // Log success login
     await AuditService.logEvent(user._id, sessionId, 'LOGIN', clientInfo.ipAddress, clientInfo.userAgent);
 
-    const loggedInUser = await UserRepository.findById(user._id, ['role', 'organization', 'organizations', 'selectedOrganization']);
+    const loggedInUser = await UserRepository.findById(user._id, ['role', 'organizations']);
 
     return { user: loggedInUser, accessToken, refreshToken };
   }
@@ -224,7 +224,7 @@ export class AuthService {
     // Associate user with organization and organization-specific role
     await UserRepository.associateOrganizationAndRole(user._id, organization._id, orgSuperAdminRole._id);
 
-    const updatedUser = await UserRepository.findById(user._id, ['role', 'organization', 'organizations', 'selectedOrganization']);
+    const updatedUser = await UserRepository.findById(user._id, ['role', 'organizations', 'selectedOrganization']);
     return updatedUser;
   }
 
@@ -255,7 +255,7 @@ export class AuthService {
 
     await user.save();
 
-    const updatedUser = await UserRepository.findById(userId, ['role', 'organization', 'organizations', 'selectedOrganization']);
+    const updatedUser = await UserRepository.findById(userId, ['role', 'organizations', 'selectedOrganization']);
     return updatedUser;
   }
 }

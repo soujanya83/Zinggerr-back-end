@@ -5,7 +5,7 @@ import { ApiError } from '../utils/ApiError.js';
 export class UserController {
   static createUser = async (req, res, next) => {
     try {
-      const organizationId = req.body.organization || req.user.organization;
+      const organizationId = req.body.organization || req.user.selectedOrganization;
       if (!organizationId) {
         throw new ApiError(400, 'Organization ID is required');
       }
@@ -20,18 +20,18 @@ export class UserController {
 
   static getUsers = async (req, res, next) => {
     try {
-      const organizationId = req.query.organization || req.user.organization;
+      const organizationId = req.query.organization || req.user.selectedOrganization;
       if (!organizationId) {
         throw new ApiError(400, 'Organization ID is required');
       }
-      const { search, gender, status, role } = req.query;
-      const users = await UserService.getUsers(
-        { search, gender, status, role, organization: organizationId },
+      const { search, gender, status, role, page, limit } = req.query;
+      const { users, pagination } = await UserService.getUsers(
+        { search, gender, status, role, organization: organizationId, page, limit },
         organizationId
       );
       return res
         .status(200)
-        .json(new ApiResponse(200, { users }, 'Users retrieved successfully'));
+        .json(new ApiResponse(200, { users, pagination }, 'Users retrieved successfully'));
     } catch (error) {
       next(error);
     }
@@ -39,7 +39,7 @@ export class UserController {
 
   static getUserById = async (req, res, next) => {
     try {
-      const organizationId = req.query.organization || req.body.organization || req.user.organization;
+      const organizationId = req.query.organization || req.body.organization || req.user.selectedOrganization;
       const user = await UserService.getUserById(req.params.id, organizationId);
       return res
         .status(200)
@@ -51,7 +51,7 @@ export class UserController {
 
   static updateUser = async (req, res, next) => {
     try {
-      const organizationId = req.body.organization || req.user.organization;
+      const organizationId = req.body.organization || req.user.selectedOrganization;
       const user = await UserService.updateUser(req.params.id, req.body, organizationId);
       return res
         .status(200)
@@ -63,7 +63,7 @@ export class UserController {
 
   static deleteUser = async (req, res, next) => {
     try {
-      const organizationId = req.body.organization || req.query.organization || req.user.organization;
+      const organizationId = req.body.organization || req.query.organization || req.user.selectedOrganization;
       await UserService.deleteUser(req.params.id, organizationId);
       return res
         .status(200)
@@ -75,7 +75,7 @@ export class UserController {
 
   static toggleUserStatus = async (req, res, next) => {
     try {
-      const organizationId = req.body.organization || req.query.organization || req.user.organization;
+      const organizationId = req.body.organization || req.query.organization || req.user.selectedOrganization;
       const user = await UserService.toggleUserStatus(req.params.id, organizationId);
       return res
         .status(200)
@@ -87,7 +87,7 @@ export class UserController {
 
   static assignPermissions = async (req, res, next) => {
     try {
-      const orgId = req.user.organization;
+      const orgId = req.user.selectedOrganization;
       const { permissions } = req.body;
       const user = await UserService.assignPermissions(req.params.id, permissions, orgId);
       return res
