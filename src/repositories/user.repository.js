@@ -24,6 +24,12 @@ export class UserRepository {
   }
 
   static async create(userData) {
+    if (userData.organization && (!userData.organizations || userData.organizations.length === 0)) {
+      userData.organizations = [userData.organization];
+    }
+    if (userData.organization && !userData.selectedOrganization) {
+      userData.selectedOrganization = userData.organization;
+    }
     return await User.create(userData);
   }
 

@@ -280,4 +280,15 @@ export class AuthController {
       next(error);
     }
   };
+
+  static updateProfile = async (req, res, next) => {
+    try {
+      const user = await AuthService.updateProfile(req.user._id, req.body);
+      return res
+        .status(200)
+        .json(new ApiResponse(200, { user }, 'Profile updated successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
 }

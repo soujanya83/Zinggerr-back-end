@@ -6,6 +6,7 @@ import {
   signupSchema,
   signinSchema,
   onboardOrganizationSchema,
+  updateProfileSchema,
 } from '../validations/auth.validation.js';
 import { upload } from '../middlewares/multer.middleware.js';
 
@@ -38,6 +39,7 @@ router.route('/onboard-organization').post(
 );
 
 router.route('/me').get(verifyJWT, AuthController.getMe);
+router.route('/profile').put(verifyJWT, validate(updateProfileSchema), AuthController.updateProfile);
 router
   .route('/selected-organization')
   .get(verifyJWT, AuthController.getSelectedOrg)

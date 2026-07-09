@@ -3,6 +3,8 @@ node_modules/
 jspm_packages/
 web_modules/
 
+postman/
+
 # Debug and Logs
 logs/
 *.log

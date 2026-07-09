@@ -71,6 +71,12 @@ const userSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Organization',
     },
+    status: {
+      type: String,
+      enum: ['active', 'inactive'],
+      default: 'active',
+      index: true,
+    },
     extraPermissions: {
       type: [String],
       default: [],

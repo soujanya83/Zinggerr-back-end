@@ -227,4 +227,35 @@ export class AuthService {
     const updatedUser = await UserRepository.findById(user._id, ['role', 'organization', 'organizations', 'selectedOrganization']);
     return updatedUser;
   }
+
+  static async updateProfile(userId, { firstname, lastname, avatar, gender, email, contactNumber, password }) {
+    const user = await UserRepository.findById(userId, [], false, true);
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    const isPasswordValid = await AuthHelper.comparePassword(password, user.password);
+    if (!isPasswordValid) {
+      throw new ApiError(401, 'Invalid password: password is required to save profile changes');
+    }
+
+    if (email && email.toLowerCase() !== user.email.toLowerCase()) {
+      const emailExists = await UserRepository.findByEmail(email.toLowerCase());
+      if (emailExists) {
+        throw new ApiError(409, 'Email is already in use by another user');
+      }
+      user.email = email.toLowerCase();
+    }
+
+    user.firstname = firstname || user.firstname;
+    user.lastname = lastname || user.lastname;
+    user.avatar = avatar !== undefined ? avatar : user.avatar;
+    user.gender = gender || user.gender;
+    user.contactNumber = contactNumber || user.contactNumber;
+
+    await user.save();
+
+    const updatedUser = await UserRepository.findById(userId, ['role', 'organization', 'organizations', 'selectedOrganization']);
+    return updatedUser;
+  }
 }

@@ -67,3 +67,30 @@ export const onboardOrganizationSchema = Joi.object({
     'string.empty': 'Postal code is required'
   })
 });
+
+export const updateProfileSchema = Joi.object({
+  firstname: Joi.string().trim().required().messages({
+    'any.required': 'First name is required',
+    'string.empty': 'First name cannot be empty',
+  }),
+  lastname: Joi.string().trim().required().messages({
+    'any.required': 'Last name is required',
+    'string.empty': 'Last name cannot be empty',
+  }),
+  avatar: Joi.string().trim().optional().allow(''),
+  gender: Joi.string().trim().valid('male', 'female', 'other').required().messages({
+    'any.required': 'Gender is required',
+  }),
+  email: Joi.string().trim().email().required().messages({
+    'any.required': 'Email is required',
+    'string.email': 'Invalid email format',
+  }),
+  contactNumber: Joi.string().trim().required().messages({
+    'any.required': 'Contact number is required',
+    'string.empty': 'Contact number cannot be empty',
+  }),
+  password: Joi.string().trim().required().messages({
+    'any.required': 'Current password is required to verify identity',
+    'string.empty': 'Password cannot be empty',
+  }),
+});
