@@ -18,6 +18,9 @@ router
   .post(validate(createUserSchema), UserController.createUser)
   .get(UserController.getUsers);
 
+router.route('/permissions').get(UserController.getMergedPermissions);
+router.route('/organizations').get(UserController.getAssociatedOrganizations);
+
 router
   .route('/:id')
   .get(UserController.getUserById)

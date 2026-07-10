@@ -223,4 +223,23 @@ export class UserService {
 
     return await UserRepository.updateExtraPermissions(userId, permissions);
   }
+
+  static async getMergedPermissions(userId) {
+    const user = await User.findById(userId).populate('role');
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+    const rolePermissions = user.role?.permissions || [];
+    const extraPermissions = user.extraPermissions || [];
+    const permissions = [...new Set([...rolePermissions, ...extraPermissions])];
+    return permissions;
+  }
+
+  static async getAssociatedOrganizations(userId) {
+    const user = await User.findById(userId).populate('organizations');
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+    return user.organizations || [];
+  }
 }

@@ -97,4 +97,26 @@ export class UserController {
       next(error);
     }
   };
+
+  static getMergedPermissions = async (req, res, next) => {
+    try {
+      const permissions = await UserService.getMergedPermissions(req.user._id);
+      return res
+        .status(200)
+        .json(new ApiResponse(200, { permissions }, 'User permissions retrieved successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static getAssociatedOrganizations = async (req, res, next) => {
+    try {
+      const organizations = await UserService.getAssociatedOrganizations(req.user._id);
+      return res
+        .status(200)
+        .json(new ApiResponse(200, { organizations }, 'User organizations retrieved successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
 }

@@ -47,6 +47,7 @@ export class AuthController {
     }
   };
 
+  
   static signin = async (req, res, next) => {
     try {
       const clientInfo = {
