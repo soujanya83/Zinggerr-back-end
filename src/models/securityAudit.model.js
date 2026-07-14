@@ -21,6 +21,7 @@ const securityAuditSchema = new Schema(
         'TOKEN_REUSE_DETECTED',
         'SESSION_REVOKED',
         'PASSWORD_CHANGED',
+        'PASSWORD_RESET',
         'LOGOUT_ALL',
         'FAILED_LOGIN'
       ],

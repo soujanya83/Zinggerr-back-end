@@ -11,6 +11,11 @@ const env = {
     ACCESS_TOKEN_EXPIRY: process.env.ACCESS_TOKEN_EXPIRY || '1d',
     REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET || 'fallback_refresh_secret',
     REFRESH_TOKEN_EXPIRY: process.env.REFRESH_TOKEN_EXPIRY || '10d',
+    SMTP_HOST: process.env.SMTP_HOST || 'smtp.mailtrap.io',
+    SMTP_PORT: parseInt(process.env.SMTP_PORT || '2525', 10),
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASS: process.env.SMTP_PASS,
+    EMAIL_FROM: process.env.EMAIL_FROM || 'no-reply@zingger.com',
 };
 
 export { env };

@@ -73,6 +73,7 @@ export const updateProfileSchema = Joi.object({
     'any.required': 'First name is required',
     'string.empty': 'First name cannot be empty',
   }),
+  middlename: Joi.string().trim().optional().allow(''),
   lastname: Joi.string().trim().required().messages({
     'any.required': 'Last name is required',
     'string.empty': 'Last name cannot be empty',
@@ -92,5 +93,29 @@ export const updateProfileSchema = Joi.object({
   password: Joi.string().trim().required().messages({
     'any.required': 'Current password is required to verify identity',
     'string.empty': 'Password cannot be empty',
+  }),
+});
+
+export const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().lowercase().trim().required().messages({
+    'any.required': 'Email is required',
+    'string.empty': 'Email cannot be empty',
+    'string.email': 'Please fill a valid email address',
+  }),
+});
+
+export const resetPasswordSchema = Joi.object({
+  token: Joi.string().trim().required().messages({
+    'any.required': 'Token is required',
+    'string.empty': 'Token cannot be empty',
+  }),
+  password: Joi.string().min(6).required().messages({
+    'any.required': 'Password is required',
+    'string.empty': 'Password cannot be empty',
+    'string.min': 'Password must be at least 6 characters',
+  }),
+  confirmNewPassword: Joi.string().required().valid(Joi.ref('password')).messages({
+    'any.required': 'Confirm password is required',
+    'any.only': 'Confirm password must match the new password',
   }),
 });

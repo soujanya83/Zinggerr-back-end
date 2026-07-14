@@ -291,4 +291,37 @@ export class AuthController {
       next(error);
     }
   };
+
+  static forgotPassword = async (req, res, next) => {
+    try {
+      const { email } = req.body;
+      const originUrl = req.headers.origin || req.headers.referer;
+
+      await AuthService.forgotPassword(email, originUrl);
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, {}, 'If an account matches that email, a password reset link has been sent.'));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static resetPassword = async (req, res, next) => {
+    try {
+      const { token, password, confirmNewPassword } = req.body;
+      const clientInfo = {
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      };
+
+      await AuthService.resetPassword({ token, password, confirmNewPassword }, clientInfo);
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, {}, 'Password reset successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
 }

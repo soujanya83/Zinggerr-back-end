@@ -1,3 +1,6 @@
+import crypto from 'crypto';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { UserRepository } from '../repositories/user.repository.js';
 import { RoleRepository } from '../repositories/role.repository.js';
 import { OrganizationRepository } from '../repositories/organization.repository.js';
@@ -7,6 +10,12 @@ import { SessionService } from './session.service.js';
 import { SessionRepository } from '../repositories/session.repository.js';
 import { AuditService } from './audit.service.js';
 import { User } from '../models/user.model.js';
+import { EmailService } from './email.service.js';
+import { forgotPasswordTemplate } from '../email-template/auth/forgot-password.template.js';
+import { resetPasswordTemplate } from '../email-template/auth/reset-password.template.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export class AuthService {
   static async signup({ firstname, lastname, email, contactNumber, password, userType, gender }, clientInfo = {}) {
@@ -228,7 +237,7 @@ export class AuthService {
     return updatedUser;
   }
 
-  static async updateProfile(userId, { firstname, lastname, avatar, gender, email, contactNumber, password }) {
+  static async updateProfile(userId, { firstname, middlename, lastname, avatar, gender, email, contactNumber, password }) {
     const user = await UserRepository.findById(userId, [], false, true);
     if (!user) {
       throw new ApiError(404, 'User not found');
@@ -248,6 +257,7 @@ export class AuthService {
     }
 
     user.firstname = firstname || user.firstname;
+    user.middlename = middlename !== undefined ? middlename : user.middlename;
     user.lastname = lastname || user.lastname;
     user.avatar = avatar !== undefined ? avatar : user.avatar;
     user.gender = gender || user.gender;
@@ -257,5 +267,101 @@ export class AuthService {
 
     const updatedUser = await UserRepository.findById(userId, ['role', 'organizations', 'selectedOrganization']);
     return updatedUser;
+  }
+
+  static async forgotPassword(email, originUrl) {
+    const user = await UserRepository.findByEmail(email.toLowerCase());
+    // Security best practice: Do not disclose whether the email exists
+    if (!user) {
+      return;
+    }
+
+    // Generate secure token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    // Token expires in 15 minutes
+    const tokenExpires = new Date(Date.now() + 15 * 60 * 1000);
+
+    // Save token and expiry
+    await User.findByIdAndUpdate(user._id, {
+      passwordResetToken: hashedToken,
+      passwordResetExpires: tokenExpires
+    });
+
+    // Build reset URL
+    const resetURL = `${originUrl || 'http://localhost:5001'}/reset-password?token=${resetToken}`;
+
+    // Send email using modular template
+    const subject = 'Zinggerr - Password Reset Link';
+    const html = forgotPasswordTemplate(resetURL);
+    const logoPath = path.join(__dirname, '../email-template/assets/zinggerrlogo.png');
+
+    await EmailService.sendEmail({
+      to: user.email,
+      subject,
+      html,
+      text: `Reset your password by visiting this link: ${resetURL}`,
+      attachments: [
+        {
+          filename: 'zinggerrlogo.png',
+          path: logoPath,
+          cid: 'zinggerrlogo',
+        },
+      ],
+    });
+  }
+
+  static async resetPassword({ token, password, confirmNewPassword }, clientInfo = {}) {
+    if (password !== confirmNewPassword) {
+      throw new ApiError(400, 'Passwords do not match');
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    // Retrieve user whose token matches and has not expired yet
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: new Date() }
+    }).select('+password');
+
+    if (!user) {
+      throw new ApiError(400, 'Password reset token is invalid or has expired');
+    }
+
+    // Hash the new password
+    const hashedPassword = await AuthHelper.hashPassword(password);
+    user.password = hashedPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    await user.save();
+
+    // Revoke all active sessions for this user to enforce relogin
+    await SessionRepository.revokeAllSessions(user._id, 'PASSWORD_RESET');
+    
+    // Log event in audit
+    await AuditService.logEvent(user._id, null, 'PASSWORD_RESET', clientInfo.ipAddress, clientInfo.userAgent, {
+      action: 'REVOKE_ALL_SESSIONS_ON_RESET',
+    });
+
+    // Send confirmation email using modular template
+    const subject = 'Zinggerr - Password Reset Successful';
+    const html = resetPasswordTemplate();
+    const logoPath = path.join(__dirname, '../email-template/assets/zinggerrlogo.png');
+
+    await EmailService.sendEmail({
+      to: user.email,
+      subject,
+      html,
+      text: `Your password has been successfully reset.`,
+      attachments: [
+        {
+          filename: 'zinggerrlogo.png',
+          path: logoPath,
+          cid: 'zinggerrlogo',
+        },
+      ],
+    });
   }
 }

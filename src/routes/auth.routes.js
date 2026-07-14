@@ -7,6 +7,8 @@ import {
   signinSchema,
   onboardOrganizationSchema,
   updateProfileSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from '../validations/auth.validation.js';
 import { upload } from '../middlewares/multer.middleware.js';
 
@@ -16,6 +18,8 @@ const router = Router();
 router.route('/signup').post(validate(signupSchema), AuthController.signup);
 router.route('/signin').post(validate(signinSchema), AuthController.signin);
 router.route('/refresh-token').post(AuthController.refreshAccessToken);
+router.route('/forgot-password').post(validate(forgotPasswordSchema), AuthController.forgotPassword);
+router.route('/reset-password').post(validate(resetPasswordSchema), AuthController.resetPassword);
 
 // Protected routes
 router.route('/logout').post(verifyJWT, AuthController.logout);
