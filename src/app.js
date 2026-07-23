@@ -10,6 +10,8 @@ import roleRouter from './routes/role.routes.js';
 import permissionRouter from './routes/permission.routes.js';
 import organizationRouter from './routes/organization.routes.js';
 import userRouter from './routes/user.routes.js';
+import courseRouter from './routes/course.routes.js';
+import uploadRouter from './routes/upload.routes.js';
 
 const app = express();
 
@@ -39,6 +41,8 @@ app.use('/api/v1/roles', roleRouter);
 app.use('/api/v1/permissions', permissionRouter);
 app.use('/api/v1/organizations', organizationRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/courses', courseRouter);
+app.use('/api/v1/upload', uploadRouter);
 
 // Global Error Handler Middleware (MUST be last)
 app.use(errorHandler);
